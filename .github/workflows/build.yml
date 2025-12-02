@@ -9,15 +9,35 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pages: write
+      id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Install Nix
         uses: cachix/install-nix-action@v30
       - name: Build Project
         shell: bash
         run: |
-          nix build --experimental-features "nix-command flakes" .#CI
+          nix build
+      - name: Copy files for GitHub Pages
+        run: |
+          cp -r result/ pages/
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+      - name: Upload to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages/
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Build Project
+        shell: bash
+        run: |
+          nix build .#zipped
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "result/**/*"
+          artifacts: "result/*"

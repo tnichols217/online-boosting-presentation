@@ -70,7 +70,8 @@
         apps = rec {
         };
         packages = rec {
-          presentations = pkgs.callPackage ./nix/build.nix {inherit pythonPkg;};
+          presentations = pkgs.callPackage ./nix/build.nix { inherit pythonPkg; };
+          zipped = pkgs.callPackage ./nix/zipped.nix { src = presentations; };
           CI = presentations;
           default = presentations;
         };
