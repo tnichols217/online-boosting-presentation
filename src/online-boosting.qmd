@@ -1,0 +1,135 @@
+---
+title: Online Boosting Algorithms
+subtitle: CSDS 440 - Fall 2025
+author: Trevor Nichols
+---
+
+## What is Boosting?
+
+- The process of combining multiple weaker models (weak learners) into a more highly accurate learner (strong learner)
+- This is NOT the same as Bagging or Neural Networks on a fundamental level
+- Trains these weak learners simultaneously via an update algorithm when training the strong learner
+- Assumes that weak learners perform any amount better than random guessing and improve over time
+
+## What is Online Learning?
+
+- Learning algorithm learns over "time" by looking at samples as they appear
+- Memory footprint is smaller, only portions of your samples need to be stored at once
+- Does not revisit old data
+- Can become better as data changes over time
+- Think of something like stochastic GD (not batched), but only looking at each sample once
+
+## What is Online Boosting?
+
+- As expected, a boosting algorithm that is online
+- You may have heard of `Adaboost` before
+- Requires weak learners to also be online
+- Meta-structure of online boosting makes no assumptions about underlying data
+
+## What about Bagging?
+
+Bagging trains multiple different models and combines them into a larger model after each submodel is trained.
+
+The final structure may look similar to that of an Online Boosting model, but with the shortcomings that they are not updatable over time inherrently.
+
+## Whats new?
+
+My assignment paper discusses two new boosting algorithms:
+
+1. Online BBM (Optimal)
+1. AdaBoost.OL (Adaptive)
+
+These only work on binary classification!
+
+## Assumptions
+
+Weak learners predict incorrectly a maximum of $(\frac{1}{2}-\gamma)T+S$ out of $T$ samples.
+
+Where $\gamma$ is our edge loss and $S$ is our irreducible loss (for before the weak learner learns)
+
+This means we expect our weak learners to eventually become $\gamma$ better than random guessing.
+
+For our algorithms, we utilize very short classification trees as our weak learners.
+
+## What we can deduce
+
+Our strong learner can achieve $\gamma'=\epsilon$ better than random guessing with:
+
+1. $\frac{1}{\gamma^2}\ln(\frac{1}{\epsilon})$ copies of the $\gamma$ weak learner
+1. $S'=\frac{S}{\gamma}+\frac{1}{\gamma^2}$
+1. $S>\frac{1}{\gamma}$
+
+## How does it work - OnlineBBM
+
+1. Predict based on inputs for all weak learners as a weighted majority vote
+1. Update our errors, weights (relies on $\gamma$), and update probabilities
+1. Pass our sample to the weak learners to learn
+    1. If weak learners support weighted updates, pass the update probability as the weight
+    1. Or else, conditionally sample based on probabilities as to which weak learners to update
+
+## Why we need AdaBoost.OL
+
+We don't know $\gamma$ (almost always)!
+
+So instead we just have approximate update formulae that do not depend on gamma.
+
+We effectively do this by predicting utilizing logistic loss and minimising that.
+
+Our update algorithms will obviously look different for AdaBoost.OL
+
+## How it differs from other solutions
+
+OnlineBBM is proven to be as optimal as possible (up to polylogarythmic factors) as well as having a weaker restraint on our weak learners.
+
+AdaBoost.OL, while not optimal, still performs very well and is a quick learner empirically, when $\gamma$ is not known.
+
+## Shortcomings
+
+As mentioned earlier, this only works for classification models and for our specific algorithms today, only binary classification.
+
+Extensions to this concept for multi-class support already exists in other places as well.
+
+One benefit is that the weak learners are incredibly easy to train as they are decision tree stubs
+
+## A Quick Comparison to NNs
+
+Relaxing the constraint that weak learners have to accurately predict the outcome
+
+- A single layer neural network appears to be very similar to that of a boosting framework
+
+Since strong learners are also valid weak learners, a stacked neural network would be similar to that of a composed strong learner.
+
+## My Direction
+
+Building on the concept of online learning and Bayesian Belief Networks, I want to investigate deep multi-dimensional connections between data on a graphical network.
+
+- I have built a basic gaussian BBN for single-dimensional data nodes in the past
+- Expanding to bidirectional BNN as edges between nodes would
+    - Learn significantly deeper transformations between data
+    - Similarly provide error propagation to BBNs
+    - Be an online learning model to be able to stay up to date
+
+## My Proposed Structure
+
+::: {.columns}
+::: {.column}
+With:
+
+- Green nodes: Multidimensional input
+- Red edges: Autoencoders
+- Blue nodes: Vectorized Encoding
+- Yellow edges: Bidirectional BNNs
+
+:::
+::: {.column}
+![Graphical Online Bayesian Belief Neural Network](./graph.png)
+:::
+:::
+
+## My Goal
+
+Building such a structure should not be too completely difficult however there are some difficulties:
+
+- Creating tolerant and low-bias bidirectional BNNs (prior work exists)
+- Adapting the message passing algorithm to work with our BNNs
+- Generating high dimensional output from our autoencodings (images?)
